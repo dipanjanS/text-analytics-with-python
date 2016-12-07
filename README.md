@@ -10,8 +10,12 @@ in analyzing text data. This repository contains datasets and code used in this 
 I will also be adding various notebooks and bonus content here from time to time. 
 Keep watching this space!
 
-#### Get the book 
-add official sources here
+### Get the book 
+<div>
+<a href="http://rd.springer.com/book/10.1007%2F978-1-4842-2388-8">
+  <img src="./image_gallery/springer_logo.png" alt="springer" align="left"/>
+</a>
+</div>
 
 <br>
 
