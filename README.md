@@ -10,12 +10,17 @@ in analyzing text data. This repository contains datasets and code used in this 
 I will also be adding various notebooks and bonus content here from time to time. 
 Keep watching this space!
 
-#### Get the book 
-add official sources here
+## Get the book 
+<div>
+<a target="_blank" href="http://rd.springer.com/book/10.1007%2F978-1-4842-2388-8">
+  <img src="./image_gallery/springer_logo.png" alt="springer" align="left"/>
+</a>
+</div>
 
 <br>
+<br>
 
-<a href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
+<a target="_blank" href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
   <img src="./image_gallery/cover_front.png" alt="Book Cover" width="250" align="left"/>
 </a>
 
