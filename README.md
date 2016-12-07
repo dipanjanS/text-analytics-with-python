@@ -21,11 +21,10 @@ Keep watching this space!
 <a target="_blank" href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
   <img src="./image_gallery/amazon_logo.jpg" alt="amazon" align="left"/>
 </a>
+<br>
 </div>
 
-<br>
-<br>
-
+## About the book 
 <a target="_blank" href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
   <img src="./image_gallery/cover_front.png" alt="Book Cover" width="250" align="left"/>
 </a>
