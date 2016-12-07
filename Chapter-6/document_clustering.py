@@ -180,7 +180,7 @@ plot_clusters(num_clusters=num_clusters,
               
 from sklearn.cluster import AffinityPropagation
               
-def affinty_propagation(feature_matrix):
+def affinity_propagation(feature_matrix):
     
     sim = feature_matrix * feature_matrix.T
     sim = sim.todense()
@@ -190,7 +190,7 @@ def affinty_propagation(feature_matrix):
     return ap, clusters
 
 # get clusters using affinity propagation
-ap_obj, clusters = affinty_propagation(feature_matrix=feature_matrix)
+ap_obj, clusters = affinity_propagation(feature_matrix=feature_matrix)
 movie_data['Cluster'] = clusters
 
 # get the total number of movies per cluster
