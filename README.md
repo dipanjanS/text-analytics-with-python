@@ -12,7 +12,7 @@ Keep watching this space!
 
 ## Get the book 
 <div>
-<a href="http://rd.springer.com/book/10.1007%2F978-1-4842-2388-8" target="_blank">
+<a target="_blank" href="http://rd.springer.com/book/10.1007%2F978-1-4842-2388-8">
   <img src="./image_gallery/springer_logo.png" alt="springer" align="left"/>
 </a>
 </div>
@@ -20,7 +20,7 @@ Keep watching this space!
 <br>
 <br>
 
-<a href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python" target="_blank">
+<a target="_blank" href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
   <img src="./image_gallery/cover_front.png" alt="Book Cover" width="250" align="left"/>
 </a>
 
