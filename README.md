@@ -50,7 +50,7 @@ concepts and to implement them to solve your own problems.
 
 <div style='font-size:0.5em;'>
 <sup>Edition: 1st<br>
-Pages: 454<br>
+Pages: 385<br>
 Language: English<br>
 Book Title: Text Analytics with Python<br>
 Publisher: Apress (a part of Springer)<br>  
