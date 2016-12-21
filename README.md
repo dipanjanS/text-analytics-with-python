@@ -24,6 +24,9 @@ Keep watching this space!
 <a target="_blank" href="https://books.google.co.in/books?id=IimgDQAAQBAJ&dq=text+analytics+with+python&source=gbs_navlinks_s">
   <img src="./image_gallery/googlebooks_logo.png" alt="google" align="left"/>
 </a>
+<a target="_blank" href="https://play.google.com/store/books/details/Dipanjan_Sarkar_Text_Analytics_with_Python?id=IimgDQAAQBAJ">
+  <img src="./image_gallery/googleplay_logo.png" alt="google" align="left"/>
+</a>
 <br>
 </div>
 
