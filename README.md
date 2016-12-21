@@ -21,6 +21,9 @@ Keep watching this space!
 <a target="_blank" href="https://www.amazon.com/Text-Analytics-Python-Real-World-Actionable/dp/148422387X/ref=sr_1_1?ie=UTF8&qid=1481143141&sr=8-1&keywords=text+analytics+with+python">
   <img src="./image_gallery/amazon_logo.jpg" alt="amazon" align="left"/>
 </a>
+<a target="_blank" href="https://books.google.co.in/books?id=IimgDQAAQBAJ&dq=text+analytics+with+python&source=gbs_navlinks_s">
+  <img src="./image_gallery/googlebooks_logo.png" alt="google" align="left"/>
+</a>
 <br>
 </div>
 
