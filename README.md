@@ -68,7 +68,6 @@ Print ISBN: 978-1-4842-2387-1 &emsp; Online ISBN: 978-1-4842-2388-8 &emsp; DOI: 
 </div>
 
 <br>
-
 This book:
  - Provides complete coverage of the major concepts and 
  techniques of natural language processing (NLP) and text analytics
@@ -82,4 +81,13 @@ This book:
  
  
 ## Contents  
+
+ - Chapter 1: Natural Language Basics
+ - Chapter 2: Python Refresher
+ - Chapter 3: Processing and Understanding Text
+ - Chapter 4: Text Classification
+ - Chapter 5: Text Summarization
+ - Chapter 6: Text Similarity and Clustering
+ - Chapter 7: Semantic and Sentiment Analysis
+
 
