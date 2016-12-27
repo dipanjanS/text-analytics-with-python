@@ -61,16 +61,11 @@ technique and algorithm with both a bird's eye view to understand how it
 can be used as well as with a microscopic view to understand the mathematical 
 concepts and to implement them to solve your own problems.
 
-<div style='font-size:0.5em;'>
-<sup>Edition: 1st<br>
-Pages: 385<br>
-Language: English<br>
-Book Title: Text Analytics with Python<br>
-Publisher: Apress (a part of Springer)<br>  
-Print ISBN: 978-1-4842-2387-1<br>  
-Online ISBN: 978-1-4842-2388-8<br>
-DOI: 10.1007/978-1-4842-2388-8<br>
-Copyright: Dipanjan Sarkar<br></div>
+<div style='font-size:0.5em;'><sup>
+Edition: 1st &emsp; Pages: 385 &emsp; Language: English<br/>
+Book Title: Text Analytics with Python &emsp; Publisher: Apress (a part of Springer) &emsp; Copyright: Dipanjan Sarkar<br/>  
+Print ISBN: 978-1-4842-2387-1 &emsp; Online ISBN: 978-1-4842-2388-8 &emsp; DOI: 10.1007/978-1-4842-2388-8<br/>
+</div>
 
 <br>
 
@@ -86,5 +81,5 @@ This book:
  `gensim`, `scikit-learn`, `spaCy` and `Pattern`
  
  
-
+## Contents  
 
