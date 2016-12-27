@@ -10,6 +10,13 @@ in analyzing text data. This repository contains datasets and code used in this 
 I will also be adding various notebooks and bonus content here from time to time. 
 Keep watching this space!
 
+#### TODO
+
+- [x] Add code used in the book
+- [x] Add datasets used in the book
+- [ ] Add code used in the book ported to Python 3.x (for people using Python 3)
+- [ ] Add bonus content
+
 ## Get the book 
 <div>
 <a target="_blank" href="http://www.apress.com/us/book/9781484223871">
