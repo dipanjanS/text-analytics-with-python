@@ -14,6 +14,9 @@ Keep watching this space!
 
 - [x] Add code used in the book
 - [x] Add datasets used in the book
+- [x] Add book description
+- [ ] Update chapter descriptions
+- [ ] Add necessary code comments & documentation
 - [ ] Add code used in the book ported to Python 3.x (for people using Python 3)
 - [ ] Add bonus content
 
