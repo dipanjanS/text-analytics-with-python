@@ -79,8 +79,8 @@ This book:
   analyzing app or game reviews using topic modeling and text summarization, 
   and clustering popular movie synopses and analyzing the sentiment of movie reviews
  - Shows implementations based on Python and several popular open source libraries 
- in NLP and text analytics, such as the natural language toolkit (`nltk`), 
- `gensim`, `scikit-learn`, `spaCy` and `Pattern`
+ in NLP and text analytics, such as the natural language toolkit ([`nltk`](http://www.nltk.org/)), 
+ [`gensim`](https://radimrehurek.com/gensim/), [`scikit-learn`](http://scikit-learn.org/stable/), [`spaCy`](https://spacy.io/) and [`pattern`](http://www.clips.ua.ac.be/pattern)
  
  
 ## Contents  
