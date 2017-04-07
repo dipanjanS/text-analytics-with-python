@@ -33,9 +33,11 @@ Keep watching this space!
 </a>
 <br>
 </div>
+<br><br><br>
+
 <div>
 <a target="_blank" href="https://www.safaribooksonline.com/library/view/text-analytics-with/9781484223871/">
-  <img src="./image_gallery/amazon_logo.jpg" alt="amazon" align="left"/>
+  <img src="./image_gallery/safari_logo.jpg" alt="amazon" align="left"/>
 </a>
 <a target="_blank" href="https://books.google.co.in/books?id=IimgDQAAQBAJ&dq=text+analytics+with+python&source=gbs_navlinks_s">
   <img src="./image_gallery/googlebooks_logo.png" alt="google" align="left"/>
