@@ -32,6 +32,8 @@ Keep watching this space!
   <img src="./image_gallery/amazon_logo.jpg" alt="amazon" align="left"/>
 </a>
 <br>
+</div>
+<div>
 <a target="_blank" href="https://www.safaribooksonline.com/library/view/text-analytics-with/9781484223871/">
   <img src="./image_gallery/amazon_logo.jpg" alt="amazon" align="left"/>
 </a>
