@@ -37,7 +37,7 @@ Keep watching this space!
 
 <div>
 <a target="_blank" href="https://www.safaribooksonline.com/library/view/text-analytics-with/9781484223871/">
-  <img src="./image_gallery/safari_logo.jpg" alt="amazon" align="left"/>
+  <img src="./image_gallery/safari_logo.jpg" alt="safari" align="left"/>
 </a>
 <a target="_blank" href="https://books.google.co.in/books?id=IimgDQAAQBAJ&dq=text+analytics+with+python&source=gbs_navlinks_s">
   <img src="./image_gallery/googlebooks_logo.png" alt="google" align="left"/>
@@ -77,7 +77,9 @@ Book Title: Text Analytics with Python &emsp; Publisher: Apress (a part of Sprin
 Print ISBN: 978-1-4842-2387-1 &emsp; Online ISBN: 978-1-4842-2388-8 &emsp; DOI: 10.1007/978-1-4842-2388-8<br/>
 </div>
 
-<br>
+
+<br><br>
+
 This book:
  - Provides complete coverage of the major concepts and 
  techniques of natural language processing (NLP) and text analytics
