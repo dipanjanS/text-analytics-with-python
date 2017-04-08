@@ -78,7 +78,7 @@ Print ISBN: 978-1-4842-2387-1 &emsp; Online ISBN: 978-1-4842-2388-8 &emsp; DOI: 
 </div>
 
 
-<br><br>
+<br>
 
 This book:
  - Provides complete coverage of the major concepts and 
