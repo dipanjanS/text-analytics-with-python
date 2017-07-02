@@ -41,7 +41,14 @@ result[0]
 dep_tree = [parse.tree() for parse in result][0]
 print dep_tree
 dep_tree.draw()
-                           
+
+'''
+# code for generation of annotated dependency tree shown in Figure 3-4
+from graphviz import Source
+dep_tree_dot_repr = [parse for parse in result][0].to_dot()
+source = Source(dep_tree_dot_repr, filename="dep_tree", format="png")
+source.view()
+'''
                           
 import nltk
 tokens = nltk.word_tokenize(sentence)
