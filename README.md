@@ -10,7 +10,7 @@ in analyzing text data. This repository contains datasets and code used in this 
 I will also be adding various notebooks and bonus content here from time to time. 
 Keep watching this space!
 
-## Help Needed on porting code to Python 3.x. Please check [this link](https://github.com/dipanjanS/text-analytics-with-python/issues/3) if you are interested in contributing.
+## Help Needed on porting code to Python 3.x. Please check [this link](https://github.com/dipanjanS/text-analytics-with-python/issues/3) if you are interested in contributing. -- To be resumed end of August.
 
 #### TODO
 
