@@ -10,17 +10,8 @@ in analyzing text data. This repository contains datasets and code used in this 
 I will also be adding various notebooks and bonus content here from time to time. 
 Keep watching this space!
 
-## Help Needed on porting code to Python 3.x. Please check [this link](https://github.com/dipanjanS/text-analytics-with-python/issues/3) -- To be resumed end of August-September, 2017.
-
-#### TODO
-
-- [x] Add code used in the book
-- [x] Add datasets used in the book
-- [x] Add book description
-- [ ] Update chapter descriptions
-- [ ] Add necessary code comments & documentation
-- [ ] Add code used in the book ported to Python 3.x (for people using Python 3)
-- [ ] Add bonus content
+## Work is underway for a revised edition of this book including all code in python 3 with several new examples too!
+<br>
 
 ## Get the book 
 <div>
