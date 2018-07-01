@@ -1,2 +1,0 @@
-*.csv filter=lfs diff=lfs merge=lfs -text
-'Chapter-3\big.txt' filter=lfs diff=lfs merge=lfs -text
