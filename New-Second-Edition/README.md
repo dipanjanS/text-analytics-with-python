@@ -1,3 +1,3 @@
 # Text Analytics with Python - Second Edition
 
-### Coming Soon!
+### ETA 22nd June, 2019
