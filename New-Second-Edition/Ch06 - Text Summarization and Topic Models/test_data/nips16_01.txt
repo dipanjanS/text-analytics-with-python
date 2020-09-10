@@ -1,0 +1,768 @@
+Cooperative Graphical Models
+Josip Djolonga
+Dept. of Computer Science, ETH Zurich ¨
+josipd@inf.ethz.ch
+Stefanie Jegelka
+CSAIL, MIT
+stefje@mit.edu
+Sebastian Tschiatschek
+Dept. of Computer Science, ETH Zurich ¨
+stschia@inf.ethz.ch
+Andreas Krause
+Dept. of Computer Science, ETH Zurich ¨
+krausea@inf.ethz.ch
+Abstract
+We study a rich family of distributions that capture variable interactions significantly more expressive than those representable with low-treewidth or pairwise
+graphical models, or log-supermodular models. We call these cooperative graphical models. Yet, this family retains structure, which we carefully exploit for
+efficient inference techniques. Our algorithms combine the polyhedral structure of
+submodular functions in new ways with variational inference methods to obtain
+both lower and upper bounds on the partition function. While our fully convex upper
+bound is minimized as an SDP or via tree-reweighted belief propagation, our lower
+bound is tightened via belief propagation or mean-field algorithms. The resulting
+algorithms are easy to implement and, as our experiments show, effectively obtain
+good bounds and marginals for synthetic and real-world examples.
+1 Introduction
+X1,1 X1,2 X1,3 X1,4
+X2,1 X2,2 X2,3 X2,4
+X3,1 X3,2 X3,3 X3,4
+Figure 1: Example cooperative model. Edge colors indicate the edge cluster. Dotted edges are cut under the
+current assignment.
+Probabilistic inference in high-order discrete graphical models has
+been an ongoing computational challenge, and all existing methods
+rely on exploiting specific structure: either low-treewidth or pairwise
+graphical models, or functional properties of the distribution such as
+log-submodularity. Here, we aim to compute approximate marginal
+probabilities in complex models with long-range variable interactions
+that do not possess any of these properties. Instead, we exploit a
+combination of structural and functional properties in new ways.
+The classical example of image segmentation may serve to motivate
+our family of models: we would like to estimate a posterior marginal
+distribution over k labels for each pixel in an image. A common
+approach uses Conditional Random Fields on a pixel neighborhood
+graph with pairwise potentials that encourage neighboring pixels to
+take on the same label. From the perspective of the graph, this model
+prefers configurations with few edges cut, where an edge is said to
+be cut if its endpoints have different labels. Such cut-based models,
+however, short-cut elongated structures (e.g. tree branches), a problem known as shrinking bias.
+Jegelka and Bilmes [1] hence replace the bias towards short cuts (boundaries) by a bias towards
+configurations with certain higher-order structure: the cut edges occur at similar-looking pixel pairs.
+They group the graph edges into clusters (based on, say, color gradients across the endpoints),
+observing that the true object boundary is captured by few of these clusters. To encourage cutting
+edges from few clusters, the cost of cutting an edge decreases as more edges in its cluster are cut.
+In short, the edges “cooperate”. In Figure 1, each pixel takes on one of two labels (colors), and cut
+30th Conference on Neural Information Processing Systems (NIPS 2016), Barcelona, Spain.
+edges are indicated by dotted lines. The current configuration cuts three red edges and one blue edge,
+and has lower probability than the configuration that swaps X3,1 to gray, cutting only red edges. Such
+a model can be implemented by an energy (cost) h(#red edges cut) + h(#blue edges cut), where
+e.g. h(u) = √
+u. Similar cooperative models can express a preference for shapes [2].
+While being expressive, such models are computationally very challenging: the nonlinear function
+on pairs of variables (edges) is equivalent to a graphical model of extremely high order (up to the
+number of variables). Previous work hence addressed only MAP inference [3, 4]; the computation of
+marginals and partition functions was left as an open problem. In this paper, we close this gap, even
+for a larger family of models.
+We address models, which we call cooperative graphical models, that are specified by an undirected
+graph G = (V, E): each node i ∈ V is associated with a random variable Xi
+that takes values in
+X = {1, 2, . . . , k}. To each vertex i ∈ V and edge {i, j}, we attach a potential function θi
+: X → R
+and θi,j : X
+2 → R, respectively. Our distribution is then
+P(x) = 1
+Z
+exp
+
+−
+X
+i∈V
+θi(xi) + X
+{i,j}∈E
+θi,j (xi
+, xj ) + f(y(x))
+
+ ν(x), (1)
+where we call y: X
+n → {0, 1}
+E the disagreement variable1
+, defined as yi,j = Jxi 6= xj K. The term
+ν : X
+n → R≥0 is the base-measure and allows to encode constraints, e.g., conditioning on some
+variables. With f ≡ 0 we obtain a Markov random field.
+Probabilistic inference in our model class (1) is very challenging, since we make no factorization
+assumption about f. One solution would be to encode P(x) as a log-linear model via a new
+variable z ∈ {0, 1}
+E and constraints ν(x, z) = Jy(x) = zK, but this in general requires computing
+exponential-sized sufficient statistics from z. In contrast, we make one additional key assumption
+that will enable the development of efficiently computable variational lower and upper bounds: we
+henceforth assume that f : {0, 1}
+E → R is submodular, i.e., it satisfies
+f(min(y, y
+0
+)) + f(max(y, y
+0
+)) ≤ f(y) + f(y
+0
+) for all y, y
+0 ∈ {0, 1}
+E,
+where the min and max operations are taken element-wise. For example, the pairwise potentials θi,j
+are submodular if θi,j (0, 0) + θi,j (1, 1) ≤ θi,j (0, 1) + θi,j (1, 0). In our introductory example, f is
+submodular if h is concave. As opposed to [3], we do not assume that f is monotone increasing.
+Importantly, even if f is submodular, P(x) neither has low treewdith, nor is its logarithm sub- or
+supermodular in x, properties that have commonly been exploited for inference.
+Contributions. We make the following contributions: (1) We introduce a new family of probabilistic models that can capture rich non-submodular interactions, while still admitting efficient
+inference. This family includes pairwise and certain higher-order graphical models, cooperative cuts
+[1], and other, new models. We develop new inference methods for these models; in particular, (2)
+upper bounds that are amenable to convex optimization, and (3) lower bounds that we optimize with
+traditional variational methods. Finally, we demonstrate the efficacy of our methods empirically.
+1.1 Related work
+Maximum-a-posteriori (MAP). Computing the mode of (1) for binary models is also known as
+the cooperative cut problem, and has been analyzed for the case when both the pairwise interactions
+θi,j are submodular and f is monotone [1]. While the general problem is NP-hard, it can be solved if
+f is defined by a piecewise linear concave function [4].
+Variational inference. Since computing marginal probabilities for (1) is #P-hard even for pairwise
+models (when f ≡ 0) [5, 6], we revert to approximate inference. Variational inference methods for
+discrete pairwise models have been studied extensively; a comprehensive overview may be found
+in [7]. We will build on a selection of techniques that we discuss in the next section. Most existing
+methods focus on pairwise models (f ≡ 0), and many scale exponentially with the size of the largest
+factor, which is infeasible for our cooperative models. Some specialized tractable inference methods
+exist for higher-order models [8, 9], but they do not apply to our family of models (1).
+1The results presented in this paper can be easily extended to arbitrary binary-valued functions y(x).
+2
+Log-supermodular models. A related class of relatively tractable models are distributions P(x) =
+1
+Z
+exp(−g(x)) for some submodular function g; Djolonga and Krause [10] showed variational
+inference methods for those models. However, our models are not log-supermodular. While [10]
+also obtain upper and lower bounds, we need different optimization techniques, and also different
+polytopes. In fact, submodular and multi-class submodular [11] settings are a strict subset of ours:
+the function g(x) can be expressed via an auxiliary variable z ∈ {0, 1} that is fixed to zero using
+ν(x, z) = Jz = 0K. We then set f(y(x, z)) = g(x1 6= z, x2 6= z, . . . , xn 6= z).
+2 Notation and Background
+Throughout this paper, we have n variables in a graph of m edges, and the potentials θi and θi,j are
+stored in a vector θ. The characteristic vector (or indicator vector) 1A of a set A is the binary vector
+which contains 1 in the positions corresponding to elements in A, and zeros elsewhere. Moreover,
+the vector of all ones is 1, and the neighbours of i ∈ V are denoted by δ(i) ⊆ V .
+Submodularity. We assume that f in Eqn. (1) is submodular. Occasionally (in Sec. 4 and 5, where
+stated), we assume that f is monotone: for any y and y
+0
+in {0, 1}
+E such that y ≤ y
+0
+coordinate-wise,
+it holds that f(y) ≤ f(y
+0
+). When defining the inference schemes, we make use of two polytopes
+associated with f. First, the base polytope of a submodular function f is
+B(f) = {g ∈ R
+m | ∀y ∈ {0, 1}
+E : g
+T y ≤ f(y)} ∩ {g ∈ R
+m | g
+T 1 = f(1)}.
+Although B(f) is defined by exponentially many inequalities, an influential result [12] states that
+it is tractable: we can optimize linear functions over B(f) in time O(m log m + mF), where F is
+the time complexity of evaluating f. This algorithm is part of our scheme in Figure 2. Moreover,
+as a result of this (linear) tractability, it is possible to compute orthogonal projections onto B(f).
+Projection is equivalent to the minimum norm point problem [13]. While the general projection
+problem has a high degree polynomial time complexity, there are many very commonly used models
+that admit practically fast projections [14, 15, 16].
+The second polytope is the upper submodular polyhedron of f [17], defined as
+U(f) = {(g, c) ∈ R
+m+1 | ∀y ∈ {0, 1}
+E : g
+T y + c ≥ f(y)}.
+Unfortunately, U(f) is not as tractable as B(f): even checking membership in U(f) is hard [17].
+However, we can still succinctly describe specific elements of U(f). In §4, we show how to efficiently
+optimize over those elements.
+Variational inference. We briefly summarize key results for variational inference for pairwise
+models, following Wainwright and Jordan [7]. We write pairwise models as2
+P(x) = exp
+
+−
+X
+i∈V
+θi(xi) + X
+{i,j}∈E
+(gi,j Jxi 6= xj K + θi,j (xi
+, xj )
+
+− A(g)
+
+ ν(x),
+where g ∈ R
+E is an arbitrary vector and A(g) is the log-partition function. For any choice of
+parameters (θ, g), there is a resulting vector of marginals µ ∈ [0, 1]k|V |+k
+2
+|E|
+. Specifically, for every
+i ∈ V , µ has k elements µi,xi = P(Xi = xi), one for each xi ∈ X . Similarly, for each {i, j} ∈ E,
+there are k
+2
+elements µij,xixj
+so that µij,xixj = P(Xi = xi
+, Xj = xj ). The marginal polytope M is
+now the set of all such vectors µ that are realizable under some distribution P(x), and the partition
+function can equally be expressed in terms of the marginals [7]:
+A(g) = sup
+µ∈M
+
+−
+X
+i∈V,xi
+µi,xi
+θi(xi) −
+X
+{i,j}∈E
+X
+xi,xj
+µij,xixj
+θi,j (xi
+, xj ) − ∆(µ)
+T g
+
+
+| {z }
+hstack(θ,g),µi
++ H(µ), (2)
+where H(µ) is the entropy of the distribution, ∆(µ) is the vector of disagreement probabilities with
+entries ∆(µ)i,j =
+P
+xi6=xj
+µij,xixj
+, and stack(θ, g) adds the elements of θ and g into a single
+2This formulation is slightly nonstandard, but will be very useful for the subsequent discussion in §3.
+3
+vector so that the sum can be written as an inner product. Alas, neither M nor H(µ) have succinct
+descriptions and we will have to approximate them. Because the vectors in the approximation of
+M are in general not correct marginals, they are called pseudo-marginals and will be denoted by
+τ instead of µ. Different approximations of M and H yield various methods, e.g. mean-field [7],
+the semidefinite programming (SDP) relaxation of Wainwright and Jordan [18], tree-reweighted
+belief propagation (TRWBP) [19], or the family of weighted entropies [20, 21]. Due to the space
+constraints, we only discuss the latter. They approximate M with the local polytope
+L = {τ ≥ 0 | (∀i ∈ V )
+X
+xi
+τi,xi = 1 and (∀j ∈ δ(i)) τi,xi =
+X
+xj
+τij,xixj
+}.
+The approximations H to the entropy H are parametrized by one weight ρi,j per edge and one ρi per
+vertex i, all collected in a vector ρ ∈ R
+|V |+|E|
+. Then, they take the following form
+H(τ , ρ) = X
+i∈V
+ρiHi(τ i)+ X
+{i,j}∈E
+ρi,jHi,j (τ i,j ), where
+Hi(τ i) = −
+P
+xi
+τi,xi
+log τi,xi
+, and
+Hi,j (τ i,j ) = −
+P
+xi,xj
+τij,xijxj
+log τij,xixj
+.
+The most prominent example is traditional belief propagation, i.e., using the Bethe entropy, which
+sets ρe = 1 for all e ∈ E, and assigns to each vertex i ∈ V a weight of ρi = 1 − |δ(i)|.
+3 Convex upper bounds
+The above variational methods do not directly generalize to our cooperative models: the vectors of
+marginals could be exponentially large. Hence, we derive a different approach that relies on the
+submodularity of f. Our first step is to approximate f(y(x)) by a linear lower bound, f(y(x)) ≈
+g
+T y(x), so that the resulting (pairwise) linearized model will have a partition function upper
+bounding that of the original model. Ensuring that g indeed remains a lower bound means to satisfy
+an exponential number of constraints f(y(x)) ≥ g
+T y(x), one for each x ∈ {0, 1}
+n. While this is
+hard in general, the submodularity of f implies that these constraints are easily satisfied if g ∈ B(f),
+a very tractable constraint. For g ∈ B(f), we have
+log Z = log X
+x∈{0,1}V
+exp
+− (
+X
+i∈V
+X
+xi
+θi(xi) + X
+{i,j}∈E
+θi,j (xi
+, xj ) + f(y(x)))
+≤ log X
+x∈{0,1}V
+exp
+− (
+X
+i∈V
+X
+xi
+θi(xi) + X
+{i,j}∈E
+(θi,j (xi
+, xj ) + gi,j Jxi 6= xj K))
+≡ A(g).
+Unfortunately, A(g) is still very hard to compute and we need to approximate it. If we use an
+approximation A(g) that upper bounds A(g), then the above inequality will still hold when we
+replace A by A. Such approximations can be obtained by relaxing the marginal polytope M to an
+outer bound M ⊇ M, and using a concave entropy surrogate H that upper bounds the true entropy
+H. TRWBP [19] or the SDP formulation [18] implement this approach. Our central optimization
+problem is now to find the tightest upper bound, an optimization problem3
+in g:
+minimize
+g∈B(f)
+sup
+τ∈M
+hstack(θ, g), τ i + H(τ ). (3)
+Because the inner problem is linear in g, this is a convex optimization problem over the base polytope.
+To obtain the gradient with respect to g (equal to the negative disagreement probabilities −∆(τ )), we
+have to solve the inner problem. This subproblem corresponds to performing variational inference in
+a pairwise model, e.g. via TRWBP or an SDP. The optimization properties of the problem (3) depend
+on its Lipschitz continuity of the gradients (smoothness). Informally, the inferred pseudomarginals
+should not drastically change if we perturb the linearization g. The formal condition is that there
+exists some σ > 0 so that k∆(τ ) − ∆(τ
+0
+)k ≤ σkτ − τ
+0k for all τ , τ
+0 ∈ M. We discuss below
+when this condition holds. Before that, we discuss two different algorithms for solving problem (3),
+and how their convergence depends on σ.
+3
+If we compute the Fenchel dual, we obtain a special case of the problem considered in [22] with the Lovasz ´
+extension acting as a non-smooth non-local energy function (in the terminology introduced therein).
+Frank-Wolfe. Given that we can efficiently solve linear programs over B(f), the Frank-Wolfe [23]
+algorithm is a natural candidate for solving the problem. We present it in Figure 2. It iteratively
+moves towards the minimizer of a linearization of the objective around the current iterate. The method
+has a convergence rate of O(σ/t) [24], where σ is the assumed smoothness parameter. One can
+either use a fixed step size γ = 2/(t + 2), or determine it using line search. In each iteration, the
+algorithm calls the procedure LINEAR-ORACLE, which finds the vector s ∈ B(f) that minimizes the
+linearization of the objective function in (3) over the base polytope B(f). The linearization is given
+by the (approximate) gradient ∆(τ ), determined by the computed approximate marginals τ .
+When taking a step towards s, the weight of edge ei
+is changed by sei = f({e1, e2, . . . , ei}) −
+f({e1, e2, . . . , ei−1}). Due to the submodularity4 of f, an edge will obtain a higher weight if it
+appears earlier in the order determined by the disagreement probabilities ∆(τ ). Hence, in every
+iteration, the algorithm will re-adjusts the pairwise potentials, by encouraging the variables to agree
+more as a function of their (approximate) disagreement probability.
+1: procedure FW-INFERENCE(f, θ)
+2: g ← LINEAR-ORACLE(f, 0)
+3: for t = 0, 1, . . . , max steps do
+4: τ ← VAR-INFERENCE(θ, g)
+5: s ← LINEAR-ORACLE(f, τ )
+6: γ ← COMPUTE-STEP-SIZE(g, s)
+7: g ← (1 − γ)g + γs
+8: return τ , Aˆ
+1: procedure LINEAR-ORACLE(f, τ )
+2: Let e1, e2, . . . , e|E| be the edges E sorted so
+that ∆(τ )e1 ≥ ∆(τ )e2 ≥ . . . ≥ ∆(τ )e|E|
+3: for i = 0, 1, . . . , |E| do
+4: f−i ← f({e1, e2, . . . , ei−1})
+5: f+i ← f({e1, e2, . . . , ei})
+6: sei ← f+i − f−i
+7: return s
+Figure 2: Inference with Frank-Wolfe, assuming that VAR-INFERENCE guarantees an upper bound.
+Projected gradient descent (PGD). Since it is possible to compute projections onto B(f), and
+practically so for many submodular functions f, we can alternatively use projected gradient or
+subgradient descent (PGD). Without smoothness, PGD converges at a rate of O(1/
+√
+t). If the
+objective is smooth, we can use an accelerated methods like FISTA [25], which has both a much
+better O(σ/t2
+) rate and seems to converge faster than many Frank-Wolfe variants in our experiments.
+Smoothness and convergence. The final question that remains to be answered is under which
+conditions problem (3) is smooth (the proof can be found in the appendix).
+Theorem 1 Problem (3) is k
+2σ-smooth over B(f) if the entropy surrogate −H is 1
+σ
+-strongly convex.
+This result follows from the duality between smoothness and strong convexity for convex conjugates,
+see e.g. [26]. It implies that the convergence rates of the proposed algorithms depend on the strong
+convexity of the entropy approximation −H. The benefits of strongly convex entropy approximations
+are known. For instance, the tree-reweighted entropy approximation is strongly convex with a
+modulus σ depending on the size of the graph; similarly, the SDP relaxation is strongly convex [27].
+London et al. [28] provide an even sharper bound for the tree reweighted entropy, and show how one
+can strong-convexify any weighted entropy by solving a QP over the weights ρ.
+In practice, because the inner problem is typically solved using an iterative algorithm and because the
+problem is smooth, we obtain speedups by warm-starting the solver with the solution at the previous
+iterate. We can moreover easily obtain duality certificates using the results in [24].
+Joint optimization. When using weighted entropy approximations, it makes sense to optimize over
+both the linearization g and the weights ρ jointly. Specifically, let T be some set of weights that yield
+an entropy approximation H that upper bounds H. Then, if we expand H in problem (3), we obtain
+minimize
+g∈B(f),ρ∈T
+sup
+τ∈L
+hstack(θ, g), τ i +
+X
+i∈V
+ρiHi(τ i) + X
+{i,j}∈E
+ρi,jHi,j (τ i,j ).
+Note that inside the supremum, both g and ρ appear only linearly, and there is no summand that has
+terms from both of them. Thus, the problem is convex in (g, ρ), and we can optimize jointly over
+4This is also known as the diminishing returns property.
+5
+both variables. As a final remark, if we already perform inference in a pairwise model and repeatedly
+tighten the approximation by optimizing over ρ via Frank-Wolfe (as suggested in [19]), then the
+complexity per iteration remains the same even if we use the higher-order term f.
+4 Submodular lower bounds
+While we just derived variational upper bounds, we next develop lower bounds on the partition
+function. Specifically, analogously to the linearization for the upper bound, if we pick an element
+(g, c) of U(f), the partition function of the resulting pairwise approximation always lower bounds
+the partition function of (1). Formally,
+log Z ≥ log X
+x∈{0,1}V
+exp
+− (a
+T x +
+X
+{i,j}∈E
+θij,xixj +
+X
+{i,j}∈E
+gi,j Jxi 6= xj K + c)
+
+= A(g) − c.
+As before, after plugging in a lower bound estimate of A, we obtain a variational lower bound over
+the partition function, which takes the form
+log Z ≥ sup
+(g,c)∈U(f),τ∈M
+−c + hstack(θ, g), τ i + H(τ ), (4)
+for any pair of approximations of M and H that guarantee a lower bound of the pairwise model.
+We propose to optimize this lower bound in a block-coordinate-wise manner: first with respect to
+the pseudo-marginals τ (which amounts to approximate inference in the linearized model), and
+then with respect to the supergradient (g, c) ∈ U(f). As already noted, this step is in general
+intractable. However, it is well-known [29] that for any Y ⊆ E we can construct a point (so
+called bar supergradient) in U(f) as follows. First, define the vectors ai,j = f(1{i,j}) and bi,j =
+f(1)−f(1−1{i,j}). Then, the vector (g, c) with g = b1Y +(1−1Y )a and c = f(Y )−b
+T 1Y
+belongs to U(f), where  denotes element-wise multiplication.
+Theorem 2 Optimizing problem (4) for a fixed τ over all bar supergradients is equal to the following
+submodular minimization problem minY ⊆E f(Y ) +
+∆(τ )  (b − a) − b
+T
+1Y .
+In contrast to computing the MAP, the above problem has no constraints and can be easily solved
+using existing algorithms. As the approximation algorithm for the linearized pairwise model, one
+can always use mean-field [7]. Moreover, if (i) the problem is binary with submodular pairwise
+potentials θi,j and (ii) f is monotone, we can also use belief propagation. This is an implication
+of the result of Ruozzi [30], who shows that traditional belief-propagation yields a lower bound on
+the partition function for binary pairwise log-supermodular models. It is easy to see that the above
+conditions are sufficient for the log-supermodularity of the linearized model, as g ≥ 0 when f is
+monotone (because both a and b have non-negative components). Moreover, in this setting both
+the mean-field and belief propagation objectives (i.e. computing τ ) can be cast as an instance of
+continuous submodular minimization (see e.g. [31]), which means that they can be solved to arbitrary
+precision in polynomial time. Unfortunately, problem (4) will not be jointly submodular, so we still
+need to use the block-coordinate ascent method we have just outlined.
+5 Approximate inference via MAP perturbations
+For binary models with submodular pairwise potentials and monotone f we can (approximately)
+solve the MAP problem using the techniques in [1, 4]. Hence, this opens as an alternative approach
+the perturb-and-MAP method of Papandreou and Yuille [32]. This method relies on a set of tractable
+first order perturbations: For any i ∈ V define θ
+0
+i
+(xi) = θi(xi) − ηi,xi
+, where η = (ηi,xi
+)i∈V,xi∈X
+are a set of independently drawn Gumbel random variables. The optimizer argminxGη(x) of the
+perturbed model energy Gη(x) = P
+i∈V
+θ
+0
+i
+(xi) + P
+{i,j}∈E
+θi,j (xi
+, xj ) + f(y(x)) is then a sample
+from (an approximation to) the true distribution. If this MAP problem can be solved exactly (which is
+not always the case here), then it is possible to obtain an upper bound on the partition function [33].
+6 Experiments
+Synthetic experiments. Our first set of experiments uses a complete graph on n variables. The
+unary potentials were sampled as θi(xi) ∼ Uniform(−α, α). The edges E were randomly split
+into five disjoint buckets E1, E2, . . . , E5, and we used f(y) = P5
+j=1 hj (yEj
+), where yEi
+are the
+coordinates of y corresponding to that group, and the functions {hj} will be defined below. To
+perform inference in the linearized pairwise models, we used: trwbp, jtree+ (exact inference, upper
+bound), jtree- (same, lower bound), sdp (SDP), mf (mean-field), bp (belief propagation), pmap
+(perturb-and-MAP with approximate MAP) and epmap (perturb-and-MAP with exact MAP). We
+used libDAI [34] and implemented sdp using cvxpy [35] and SCS [36]. As a maxflow solver we
+used [37]. Errors bars denote three standard errors.
+Figure 3 shows the results for hi(yEi
+) = wi
+qP
+e∈Ei
+ye/
+p
+|Ei
+|, with weights wi ∼ Uniform(0, β).
+In panel (c) we use mixed (attractive and repulsive) pairwise potentials, chosen as θi,j (xi
+, xj ) =
+wi,j Jxi 6= xj K, where wi,j ∼ Uniform(−β, β). First, the results imply that the methods optimizing
+the fully convex upper bound yield very good marginal probabilities over a large set of parameter
+configurations. The estimate of the log-partition function from trwbp is also very good, while sdp is
+much worse, which we believe can be attributed to the very loose entropy bound used in the relaxation.
+The lower bounds (bp and mf) work well for settings when the pairwise strength β is small compared
+to the unary strength α. Otherwise, both the bound and the marginals become worse, while jtreestill performs very well. This could be explained by the hardness of the pairwise models obtained
+after linearizing f. Finally, pmap (when applicable) seems very promising for small β.
+To better understand the regimes when one should use trwbp or pmap, we compare their marginal
+errors in Figure 5. We see that for most parameter configurations, trwbp performs better, and
+significantly so when the edge interactions are strong.
+Finally, we evaluate the effects of the approximate MAP solver for pmap in Figure 4. To be able
+to solve the MAP problem exactly (see [4]), we used h(yEj
+) = max{
+P
+e∈Ej
+yeve,
+P
+e∈Ej
+ve/2},
+where ve ∼ Uniform(0, β). As evident from the figure, the gains from the exact solver seem minimal,
+and it seems that solving the MAP problem approximately does not strongly affect the results.
+An example from computer vision. To demonstrate the scalability of our method and obtain a
+better qualitative understanding of the resulting marginals, we ran trwbp and pmap on a real world
+image segmentation task. We use the same setting, data and models as [1], as implemented in
+the pycoop5 package. Because libDAI was too slow, we wrote our own TRWBP implementation.
+Figure 6 shows the results for two specific images (size 305 × 398 and 214 × 320). The example
+in the first row is particularly difficult for pairwise models, but the rich higher-order model has no
+problem capturing the details even in the challenging shaded regions of the image. The second row
+shows results for two different model parameters. The second model uses a function f that is closer to
+being linear, while the first one is more curved (see the appendix for details). We observe that trwbp
+requires lower temperature parameters (i.e. relatively larger functions θi
+, θi,j and f) than pmap, and
+that the bottleneck of the complete inference procedure is running the trwbp updates. In other words,
+the added complexity from our method is minimal and the runtime is dominated by the message
+passing updates of TRWBP. Hence, any algorithms that speed up TRWBP (e.g., by parallelization or
+better message scheduling) will result in a direct improvement on the proposed inference procedure.
+7 Conclusion
+We developed new inference techniques for a new broad family of discrete probabilistic models by
+exploiting the (indirect) submodularity in the model, and carefully combining it with ideas from
+classical variational inference in graphical models. The result are inference schemes that optimize
+rigorous bounds on the partition function. For example, our upper bounds lead to convex variational
+inference problems. Our experiments indicate the scalability, efficacy and quality of these schemes.
+Acknowledgements. This research was supported in part by SNSF grant CRSII2 147633, ERC StG 307036,
+a Microsoft Research Faculty Fellowship, a Google European Doctoral Fellowship, and NSF CAREER 1553284.
+References
+[1] S. Jegelka and J. Bilmes. “Submodularity beyond submodular energies: coupling edges in graph cuts”.
+CVPR. 2011.
+5
+https://github.com/shelhamer/coop-cut.
+7
+−0.1
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+Mean absolute error in marginals
+bp
+jtree+
+jtreemf
+pmap
+sdp
+trwbp
+10−1 100 101 102
+Pairwise strength β
+−8
+−6
+−4
+−2
+0
+2
+4
+6
+Error in the estimate log
+ˆ
+Z − log
+Z
+(a) α = 2, binary, K15
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+Mean absolute error in marginals
+bp
+jtree+
+jtreemf
+pmap
+sdp
+trwbp
+10−1 100 101 102
+Pairwise strength β
+−6
+−4
+−2
+0
+2
+4
+6
+Error in the estimate log
+ˆ
+Z − log
+Z
+(b) α = 0.1, binary, K15
+−0.1
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+Absolute mean error in marginals
+jtree+
+jtreemf
+trwbp
+10−1 100 101 102
+Pairwise strength β
+−8
+−6
+−4
+−2
+0
+2
+4
+Error in the estimate log
+ˆ
+Z − log
+Z
+(c) α = 0.1, mixed, 4 labels, K10
+Figure 3: Results on several synthetic models. The methods that optimize the convex upper bound
+(trwbp, sdp) obtain very good marginals for a large set of parameter settings. Those maximizing the
+lower bound (bp, mf) fail when there is strong coupling between the edges. In the strong coupling
+regime the results of pmap also deteriorate, but not as strongly. In (c) bp, pmap, sdp are not applicable.
+10−1 100 101 102
+0.0
+0.2
+0.4
+0.6
+0.8
+Mean absolute error in marginals
+bp
+epmap
+jtree+
+jtreemf
+pmap
+sdp
+trwbp
+10−1 100 101 10
+2
+Pairwise strength β
+−6
+−4
+−2
+0
+2
+4
+6
+8
+Error in the estimate log
+ˆ
+Z − log
+Z
+Figure 4: α = 2, K15, model where epmap is applicable. Solving
+the MAP problem exactly only marginally improves over pmap.
+The other observations are similar to those in Fig. 3b.
+0.1 0.5 1.0 2.0 4.0 8.0 16.0 32.0 64.0
+Pairwise strength β
+16.0 8.0 4.0 2.0 1.0 0.5 0.1
+Unary strength
+α
+0.002 0.0021 0.0014 0.091 0.26 0.034
+0.0036 0.0023 0.058 0.24 0.069
+0.0056 0.0012 -0.0052 -0.013 0.16 0.12 0.1 0.073
+0.0088 -0.0011 -0.015 -0.032 0.057 0.086 0.15 0.2 0.12
+0.01 -0.0095-0.0095 0.097 0.2 0.2 0.068
+0.0099 0.0072 0.0046 0.085 0.17 0.12
+0.012 0.012 0.011 0.0087 0.019 0.037 -0.049 -0.23
+Figure 5: errorpmap - errortrwbp
+on K15. Missing entries were
+not significant at the 0.05 level.
+(a) Original image (b) trwbp, pairwise (c) pmap, pairwise (d) trwbp, coop. (e) pmap, coop.
+(f) Original image (g) trwbp, model 1 (h) pmap, model 1 (i) trwbp, model 2 (j) pmap, model 2
+Figure 6: Inferred marginals on an image segmentation task. The first row showcases an example
+that is particularly hard for pairwise models. In the second row we show the results for two different
+models (the cooperative function f is more curved for model 1).
+8
+[2] N. Silberman, L. Shapira, R. Gal, and P. Kohli. “A Contour Completion Model for Augmenting Surface
+Reconstructions”. ECCV. 2014.
+[3] S. Jegelka and J. Bilmes. “Approximation Bounds for Inference using Cooperative Cuts”. ICML. 2011.
+[4] P. Kohli, A. Osokin, and S. Jegelka. “A principled deep random field model for image segmentation”.
+CVPR. 2013.
+[5] M. Jerrum and A. Sinclair. “Polynomial-time approximation algorithms for the Ising model”. SIAM
+Journal on computing 22.5 (1993), pp. 1087–1116.
+[6] L. A. Goldberg and M. Jerrum. “The complexity of ferromagnetic Ising with local fields”. Combinatorics,
+Probability and Computing 16.01 (2007), pp. 43–61.
+[7] M. J. Wainwright and M. I. Jordan. “Graphical models, exponential families, and variational inference”.
+Foundations and Trends
+R in Machine Learning 1.1-2 (2008).
+[8] D. Tarlow, K. Swersky, R. S. Zemel, R. P. Adams, and B. J. Frey. “Fast Exact Inference for Recursive
+Cardinality Models”. UAI. 2012.
+[9] V. Vineet, J. Warrell, and P. H. Torr. “Filter-based mean-field inference for random fields with higher-order
+terms and product label-spaces”. IJCV 110 (2014).
+[10] J. Djolonga and A. Krause. “From MAP to Marginals: Variational Inference in Bayesian Submodular
+Models”. NIPS. 2014.
+[11] J. Zhang, J. Djolonga, and A. Krause. “Higher-Order Inference for Multi-class Log-supermodular
+Models”. ICCV. 2015.
+[12] J. Edmonds. “Submodular functions, matroids, and certain polyhedra”. Combinatorial structures and
+their applications (1970), pp. 69–87.
+[13] S. Fujishige and S. Isotani. “A submodular function minimization algorithm based on the minimum-norm
+base”. Pacific Journal of Optimization 7.1 (2011), pp. 3–17.
+[14] P. Stobbe and A. Krause. “Efficient Minimization of Decomposable Submodular Functions”. NIPS. 2010.
+[15] S. Jegelka, F. Bach, and S. Sra. “Reflection methods for user-friendly submodular optimization”. NIPS.
+2013.
+[16] F. Bach. “Learning with submodular functions: a convex optimization perspective”. Foundations and
+Trends
+R in Machine Learning 6.2-3 (2013).
+[17] R. Iyer and J. Bilmes. “Polyhedral aspects of Submodularity, Convexity and Concavity”.
+arXiv:1506.07329 (2015).
+[18] M. J. Wainwright and M. I. Jordan. “Log-determinant relaxation for approximate inference in discrete
+Markov random fields”. Signal Processing, IEEE Trans. on 54.6 (2006).
+[19] M. J. Wainwright, T. S. Jaakkola, and A. S. Willsky. “A new class of upper bounds on the log partition
+function”. UAI. 2002.
+[20] T. Heskes. “Convexity Arguments for Efficient Minimization of the Bethe and Kikuchi Free Energies.”
+JAIR 26 (2006).
+[21] O. Meshi, A. Jaimovich, A. Globerson, and N. Friedman. “Convexifying the Bethe free energy”. UAI.
+2009.
+[22] L. Vilnis, D. Belanger, D. Sheldon, and A. McCallum. “Bethe Projections for Non-Local Inference”.
+UAI. 2015.
+[23] M. Frank and P. Wolfe. “An algorithm for quadratic programming”. Naval Res. Logist. Quart. (1956).
+[24] M. Jaggi. “Revisiting Frank-Wolfe: Projection-free sparse convex optimization”. ICML. 2013.
+[25] A. Beck and M. Teboulle. “A fast iterative shrinkage-thresholding algorithm for linear inverse problems”.
+SIAM Journal on imaging sciences 2.1 (2009), pp. 183–202.
+[26] S. Kakade, S. Shalev-Shwartz, and A. Tewari. “On the duality of strong convexity and strong smoothness:
+Learning applications and matrix regularization”. Technical Report (2009).
+[27] M. J. Wainwright. “Estimating the wrong graphical model: Benefits in the computation-limited setting”.
+JMLR 7 (2006).
+[28] B. London, B. Huang, and L. Getoor. “The benefits of learning with strongly convex approximate
+inference”. ICML. 2015.
+[29] R. Iyer, S. Jegelka, and J. Bilmes. “Fast Semidifferential-based Submodular Function Optimization”.
+ICML. 2013.
+[30] N. Ruozzi. “The Bethe partition function of log-supermodular graphical models”. NIPS. 2012.
+[31] A. Weller and T. Jebara. “Approximating the Bethe Partition Function”. UAI. 2014.
+[32] G. Papandreou and A. L. Yuille. “Perturb-and-MAP random fields: Using discrete optimization to learn
+and sample from energy models”. ICCV. 2011.
+[33] T. Hazan and T. Jaakkola. “On the partition function and random maximum a-posteriori perturbations”.
+ICML (2012).
+[34] J. M. Mooij. “libDAI: A Free and Open Source C++ Library for Discrete Approximate Inference in
+Graphical Models”. Journal of Machine Learning Research (2010), pp. 2169–2173.
+[35] S. Diamond and S. Boyd. “CVXPY: A Python-Embedded Modeling Language for Convex Optimization”.
+JMLR (2016). To appear.
+[36] B. O’Donoghue, E. Chu, N. Parikh, and S. Boyd. “Conic Optimization via Operator Splitting and
+Homogeneous Self-Dual Embedding”. Journal of Optimization Theory and Applications (2016).
+[37] Y. Boykov and V. Kolmogorov. “An experimental comparison of min-cut/max-flow algorithms for energy
+minimization in vision”. Pattern Analysis and Machine Intelligence, IEEE Trans. on 26 (2004).
+9
